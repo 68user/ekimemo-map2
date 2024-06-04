@@ -5,7 +5,7 @@ MAP_CENTER_DEFAULT = {
   lng: 139.745
 };
 
-DISPLAY_MARKER_THRESHOLD = 11;
+DISPLAY_MARKER_THRESHOLD = 8;
 
 checkedList = [];
 
@@ -37,7 +37,7 @@ main = function(stations) {
     iconList = {
       sphereRed: new google.maps.MarkerImage('images/icon-sphere_red.png', new google.maps.Size(8, 8), new google.maps.Point(0, 0), new google.maps.Point(4, 4)),
       sphereGray: new google.maps.MarkerImage('images/icon-sphere_gray.png', new google.maps.Size(8, 8), new google.maps.Point(0, 0), new google.maps.Point(4, 4)),
-      raderCenter: new google.maps.MarkerImage('http://www.google.com/mapfiles/gadget/arrowSmall80.png', new google.maps.Size(31, 27), new google.maps.Point(0, 0), new google.maps.Point(9, 27))
+      raderCenter: new google.maps.MarkerImage('https://www.google.com/mapfiles/gadget/arrowSmall80.png', new google.maps.Size(31, 27), new google.maps.Point(0, 0), new google.maps.Point(9, 27))
     };
     map = new google.maps.Map(document.getElementById('map'), {
       zoom: zoom,
@@ -168,7 +168,8 @@ main = function(stations) {
       return raderMarkers.push(new google.maps.Marker({
         position: latLng,
         map: map,
-        icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + (i + 1) + '|' + bgColor + '|000000',
+	// A・B・C… の順でアイコン設定
+	icon: 'https://www.google.com/mapfiles/marker'+String.fromCharCode(65+i)+'.png',
         animation: google.maps.Animation.DROP,
         clickable: false
       }));
