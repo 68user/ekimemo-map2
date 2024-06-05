@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>駅メモマップ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/materialize/0.97.2/css/materialize.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+    <meta name="description" content="地図から最寄り駅がわかる駅メモマップ。レーダーが届く範囲を調べたり、訪問した駅を塗りつぶして記録することもできる">
+  </head>
+  <body>
+    <div style="top: 10px; right: 10px; height: 0;" class="fixed-action-btn horizontal click-to-toggle"><a class="btn-floating btn-large pink lighten-2"><i class="large mdi-navigation-menu"></i></a>
+      <ul>
+        <li><a title="境界線" class="js-btn-polygon btn-floating teal"><i class="material-icons">dashboard</i></a></li>
+        <li><a title="駅マーカー" class="js-btn-marker btn-floating cyan"><i class="material-icons">room</i></a></li>
+        <li><a title="レーダー" class="js-btn-rader btn-floating disabled"><i class="material-icons">settings_remote</i></a></li>
+      </ul>
+    </div>
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h5 data-updated="20170329" class="update-date">アップデート情報</h5>
+        <p>新設駅：《4/1》八幡大橋(東陵高校)、《4/27》まちなか陸前高田、長部、奇跡の一本松、高田高校前、高田病院、碁石海岸口、ベイサイドアリーナ<br>改称駅：《3/25》太郎丸エンゼルランド（太郎丸）・西春江ハートピア（西春江）・西長田ゆりの里（西長田）・下兵庫こうふく（下兵庫）<br>[Mar. 29, 2017]</p>
+        <p>新設駅：大船渡魚市場前。予想外のBRT駅を追加<br>[Mar. 22, 2017]</p>
+        <p>新設駅：《3/4》寺家・河戸帆待川・あき亀山、《3/25》十府ヶ浦海岸、《4/1》郡山富田・ソシオ流通センター<br>廃止駅：《3/4》【千歳線】美々、【根室本線】島ノ下・稲士別・上厚内、【釧網本線】五十石、【函館本線】東山・姫川・桂川・北豊津・蕨岱<br>改称駅：《4/1》 獨協大学前（松原団地）<br>[Mar. 4, 2017]</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-action modal-close btn red waves-effect waves-light">OK</button>
+      </div>
+    </div>
+    <div id="map"></div>
+    <script src="//maps.googleapis.com/maps/api/js?key=AIzaSyDQj-PZcsUK_cRhuV2xSO5ujBA-7-Rh-Pw"></script>
+    <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="///cdnjs.cloudflare.com/ajax/libs/materialize/0.97.2/js/materialize.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
