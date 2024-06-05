@@ -7,25 +7,57 @@ MAP_CENTER_DEFAULT = {
 
 DISPLAY_MARKER_THRESHOLD = 8;
 
+// 取済済駅色
+checkedFillColor = '#f00';
+// 取済済廃駅色
+checkedAbandonedFillColor = '#f00';
+
 checkedList = [];
 
 geocoder = null;
-
+currentPrefCode = null;
 map = null;
 
-main = function(stations) {
+main = function(stations, prefs) {
+  // 都道府県プルダウン設定
+  var select = document.querySelector('#pref');
+  prefs.forEach(function(v) {
+    var option = document.createElement('option');
+    option.value = v.pref_code;
+    option.text = v.pref_name+"("+v.ekimemo_count+"駅)";
+    select.appendChild(option);
+  });
+
   var changedHash, initMap;
   initMap = function(lat, lng, zoom) {
     var addRaderMarker, currentLatLng, currentZoom, enableMarker, enablePolygon, iconList, markers, polygons, raderCenter, raderMarkers, redraw, stationsFilter, useRader;
     if (lat == null) {
-      lat = MAP_CENTER_DEFAULT.lat;
+      let oldLat = localStorage.getItem('ekimemo_lat');
+      if ( oldLat != null && oldLat !== undefined ){
+        lat = oldLat;
+      } else {
+        lat = MAP_CENTER_DEFAULT.lat;
+      }
     }
+
     if (lng == null) {
-      lng = MAP_CENTER_DEFAULT.lng;
+      let oldLng = localStorage.getItem('ekimemo_lng');
+      if ( oldLng != null && oldLng !== undefined ){
+        lng = oldLng;
+      } else {
+        lng = MAP_CENTER_DEFAULT.lng;
+      }
     }
     if (zoom == null) {
-      zoom = 13;
+      let oldZoom = localStorage.getItem('ekimemo_zoom');
+      if ( oldZoom != null && oldZoom !== undefined ){
+        zoom = Number(oldZoom);
+//  zoom=13;
+      } else {
+        zoom = 13;
+      }
     }
+
     polygons = [];
     markers = [];
     raderMarkers = [];
@@ -44,7 +76,8 @@ main = function(stations) {
       center: new google.maps.LatLng(lat, lng),
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       streetViewControl: false,
-      disableDoubleClickZoom: true,
+      disableDoubleClickZoom: true,  // ダブルクリックでのズーム無効化
+      fullscreenControl: false,  // フルスクリーンアイコン非表示
       scaleControl: true
     });
     (function() {
@@ -85,8 +118,31 @@ main = function(stations) {
       bufferRange = 0.5;
       bounds = map.getBounds();
       stationsFilter = stations.filter(function(v) {
-        return v.lat > bounds.getSouthWest().lat() - bufferRange && v.lat < bounds.getNorthEast().lat() + bufferRange && v.lng > bounds.getSouthWest().lng() - bufferRange && v.lng < bounds.getNorthEast().lng() + bufferRange;
+	let select = document.getElementById('abandoned');
+        let abandoned_mode = select.options[select.selectedIndex].value;
+
+        if ( abandoned_mode==='1' && v.type === "1" ){
+	  // 廃駅のみモードなら、現行駅は対象外
+          return false;
+        } else if ( abandoned_mode==='2' && v.type === "2" ){
+          // 現行駅のみモードなら、廃駅は対象外
+          return false;
+        }
+	// 表示範囲外の駅なら対象外
+        if ( ! ( v.lat > bounds.getSouthWest().lat() - bufferRange
+		 && v.lat < bounds.getNorthEast().lat() + bufferRange
+		 && v.lng > bounds.getSouthWest().lng() - bufferRange
+		 && v.lng < bounds.getNorthEast().lng() + bufferRange ) ){
+	  return false;
+	}
+	// 都道府県選択済かつ、それ以外の都道府県なら対象外
+	if ( currentPrefCode !== null && currentPrefCode !== v.prefcd ){
+	    return false;
+	}
+//	console.dir("OK v.cd="+v.cd);
+	return true;
       });
+
       if (enablePolygon) {
         voronoi = d3.geom.voronoi().clipExtent([[0, 110], [60, 170]]);
         voronois = voronoi(stationsFilter.map(function(v) {
@@ -185,6 +241,7 @@ main = function(stations) {
     useRader = function(latLng) {
       var d, distances, i, j, len, ref, results1;
       distances = [];
+
       stationsFilter.forEach(function(d, i) {
         var stationLatLng;
         stationLatLng = new google.maps.LatLng(d.lat, d.lng);
@@ -212,6 +269,98 @@ main = function(stations) {
         }, i * 100, d, i));
       }
       return results1;
+    };
+    // 都道府県切り替え
+    document.getElementById("pref").onchange = function(event){
+      let select = document.getElementById("pref");
+      currentPrefCode = select.options[select.selectedIndex].value;
+      if ( currentPrefCode === "" ){
+	currentPrefCode = null;
+      } else {
+	prefs.forEach(function(v) {
+	  if ( currentPrefCode == v.pref_code ){
+	    localStorage.setItem('ekimemo_lat', v.lat);
+	    localStorage.setItem('ekimemo_lng', v.lng);
+	  }
+	});
+      }
+      return initMap();
+      if ( false ){
+	map.clearOverlays();
+	polygons = [];
+	markers = [];
+	return redraw(true);
+      }
+    };
+
+    document.getElementById("searchbox_detail").onchange = function(event){
+      var detail = document.getElementById("searchbox_detail");
+      var v = detail.options[detail.selectedIndex].value;
+      console.dir(v);
+      var lat = v.split(',')[1];
+      var lng = v.split(',')[2];
+      console.dir(lat);
+      console.dir(lng);
+
+      localStorage.setItem('ekimemo_lat', lat);
+      localStorage.setItem('ekimemo_lng', lng);
+      var latlng = new google.maps.LatLng(lat, lng);
+      map.setCenter(latlng);
+      //      localStorage.setItem('ekimemo_zoom', 3);
+      map.setZoom(13);
+    };
+    document.getElementById("searchbox").onchange = function(event){
+      var searchBox = document.getElementById("searchbox");
+      var s = searchBox.value;
+      if ( s === '' ){
+	return;
+      }
+      var matched = stations.filter(function(v) {
+	return v.name.indexOf(s) !== -1;
+//	return v.name === s;
+      });
+      console.log(matched);
+
+      var station;
+      if ( matched.length == 1 ){
+	var detail = document.getElementById('searchbox_detail');
+	while(detail.lastChild){
+	  detail.removeChild(detail.lastChild);
+	}
+	detail.style.display = 'hidden';
+
+	station = matched[0];
+
+	localStorage.setItem('ekimemo_lat', station.lat);
+	localStorage.setItem('ekimemo_lng', station.lng);
+	var latlng = new google.maps.LatLng(station.lat, station.lng);
+	map.setCenter(latlng);
+	map.setZoom(13);
+
+      } else {
+	// 1駅に絞り込めなかった
+	var detail = document.getElementById('searchbox_detail');
+	while(detail.lastChild){
+	  detail.removeChild(detail.lastChild);
+	}
+	detail.style.display = 'inline';
+
+	var option = document.createElement('option');
+	option.value = "";
+	option.text = matched.length+"駅マッチ";
+	detail.appendChild(option);
+
+	matched.forEach(function(v){
+	  var option = document.createElement('option');
+	  option.value = v.cd+","+v.lat+","+v.lng;
+	  option.text = v.name + '(' + v.prefname + ')';
+	  console.dir(option.text);
+	  detail.appendChild(option);
+	});
+      }
+    };
+    document.getElementById("abandoned").onchange = function(event){
+      return initMap();
     };
     google.maps.event.addListener(raderCenter, 'dragend', function(e) {
       return useRader(e.latLng);
@@ -300,7 +449,9 @@ main = function(stations) {
   } else if (navigator.geolocation) {
     return navigator.geolocation.getCurrentPosition(function(position) {
       if (position != null ? position.coords : void 0) {
-        return initMap(position.coords.latitude, position.coords.longitude);
+        // リロードのたびに位置がクリアされるのはよろしくないので、とりあえず現在位置の取得は外す
+        //        return initMap(position.coords.latitude, position.coords.longitude);
+        return initMap();
       } else {
         return initMap();
       }
@@ -324,6 +475,8 @@ $(function() {
     }
   }
   return d3.csv('./data/stations.csv', function(stations) {
-    return main(stations);
+    d3.csv('./data/prefs_ekimemo.csv?x', function(prefs){
+      return main(stations, prefs);
+    })
   });
 });
