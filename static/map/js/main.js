@@ -162,22 +162,25 @@ main = function(stations) {
         }
       });
     };
+    // レーダー 1・2・3 のアイコン
     addRaderMarker = function(latLng, dist, i) {
-      var bgColor;
-      bgColor = (255 - i * 15).toString(16) + (220 - i * 8).toString(16) + '66';
       return raderMarkers.push(new google.maps.Marker({
         position: latLng,
         map: map,
-	// A・B・C… の順でアイコン設定
-	icon: 'https://www.google.com/mapfiles/marker'+String.fromCharCode(65+i)+'.png',
-        animation: google.maps.Animation.DROP,
+	icon: {
+	  url: 'https://maps.google.com/mapfiles/ms/icons/yellow.png',
+	  labelOrigin: new google.maps.Point(15,10), // ラベル位置 X・Y座標微調整
+	},
+        animation: google.maps.Animation.DROP, // 上から降ってくる
+	label: ""+(i+1), // 1から順のラベル
         clickable: false
       }));
     };
+    // レーダー中心点
     raderCenter = new google.maps.Marker({
       icon: iconList.raderCenter,
-      animation: google.maps.Animation.DROP,
-      draggable: true
+      animation: google.maps.Animation.DROP, // 上から降ってくる
+      draggable: true // ドラッグで移動できるよ
     });
     useRader = function(latLng) {
       var d, distances, i, j, len, ref, results1;
@@ -198,13 +201,15 @@ main = function(stations) {
         return v.setMap(null);
       });
       raderMarkers = [];
-      ref = distances.slice(0, 14);
+      // 距離の近いN駅を取得。
+      ref = distances.slice(0, 20);
       results1 = [];
       for (i = j = 0, len = ref.length; j < len; i = ++j) {
         d = ref[i];
+	// setTimeout で少しずつ時間をずらしながらマーカー追加
         results1.push(setTimeout(function(d, i) {
           return addRaderMarker(d.latLng, d.dist, i);
-        }, i * 150, d, i));
+        }, i * 100, d, i));
       }
       return results1;
     };
