@@ -19,7 +19,7 @@ while True:
       req = urllib.request.Request(url)
       with urllib.request.urlopen(req) as res:
           body = res.read()
-          with open("line-"+str(line_no)+".html", "wb") as f:
+          with open("line/line-"+str(line_no)+".html", "wb") as f:
               f.write(body)
   except urllib.error.HTTPError as e:
       if e.getcode() == 404:

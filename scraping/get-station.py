@@ -15,7 +15,7 @@ while True:
       req = urllib.request.Request(url)
       with urllib.request.urlopen(req) as res:
           body = res.read()
-          with open("s"+str(station_no)+".html", "wb") as f:
+          with open("station/s"+str(station_no)+".html", "wb") as f:
               f.write(body)
   except urllib.error.HTTPError as e:
       if e.getcode() == 404:
