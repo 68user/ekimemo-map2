@@ -202,7 +202,7 @@ main = function(stations) {
       });
       raderMarkers = [];
       // 距離の近いN駅を取得。
-      ref = distances.slice(0, 20);
+      ref = distances.slice(0, 14);
       results1 = [];
       for (i = j = 0, len = ref.length; j < len; i = ++j) {
         d = ref[i];
