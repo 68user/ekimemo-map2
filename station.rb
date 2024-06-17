@@ -33,14 +33,31 @@ File.open('static/map/data/stations.csv', 'r:utf-8') do |file|
   end
 end
 
+prefecture = []
+File.open('static/map/data/prefs_ekimemo.csv', 'r:utf-8') do |file|
+  file.each_line do |line|
+    next if line.start_with? 'pref'
+
+    cols = line.split ','
+    prefecture << {
+      'code' => cols[0].to_i,
+      'name' => cols[1],
+      'count' => cols[4].to_i
+    }
+  end
+end
+
 ref.each do |s1|
   next if data.index { |s2| s1['name'] == s2['name'] }
 
-  # "ケ"大小問題
-  next unless s1['name'].include?('ヶ')
+  # 末尾の都道府県名を考慮
+  next if prefecture.none? do |p|
+    name = p['name']
+    name = name[0..-2] if name.end_with?('県', '都', '府')
+    s1['name'].end_with? "(#{name})"
+  end
 
-  name = s1['name'].sub 'ヶ', 'ケ'
-  i = data.index { |s2| name == s2['name'] }
+  i = data.index { |s2| s1['original_name'] == s2['name'] && s1['pref'] == s2['pref'] }
   next unless i
 
   data[i]['name'] = s1['name']
