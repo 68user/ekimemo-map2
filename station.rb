@@ -47,10 +47,22 @@ File.open('static/map/data/prefs_ekimemo.csv', 'r:utf-8') do |file|
   end
 end
 
+count = prefecture.map{0}
 set = Set.new
 data.each do |s2|
   raise "name duplicated #{s2}" unless set.add? s2['name']
 
   i = ref.index { |s1| s1['name'] == s2['name'] }
   raise "not found #{s2}" unless i
+
+  s1 = ref[i]
+  raise "prefecture mismatch #{s1} #{s2}" unless s1['pref'] == s2['pref']
+
+  pref = prefecture[s2['pref'] - 1]
+  count[s2['pref'] - 1] += 1
+  raise "prefecture name #{s2}" unless s2['prefname'] == pref['name']
+end
+
+prefecture.each_with_index do |pref, i|
+  raise "prefecture count mismatch #{pref}" unless pref['count'] == count[i]
 end
