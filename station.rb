@@ -47,35 +47,38 @@ File.open('static/map/data/prefs_ekimemo.csv', 'r:utf-8') do |file|
   end
 end
 
-ref.each do |s1|
-  next if data.index { |s2| s1['name'] == s2['name'] }
+data.dup.each do |s2|
+  next if ref.index { |s1| s1['name'] == s2['name'] }
 
-  # 末尾の都道府県名を考慮
-  next if prefecture.none? do |p|
-    name = p['name']
-    name = name[0..-2] if name.end_with?('県', '都', '府')
-    s1['name'].end_with? "(#{name})"
+  i = ref.index { |s1| s1['original_name'] == s2['name'] && s1['code'] == s2['code'] }
+
+  if i
+    s2['name'] = ref[i]['name']
+  else
+    puts "enter suffix for #{s2}"
+    suffix = gets.chomp
+    raise 'no input' if !suffix || suffix.empty?
+
+    name = "#{s2['name']}(#{suffix})"
+    raise "not found for #{name}" unless ref.index { |s1| s1['name'] == name }
+
+    s2['name'] = name
   end
 
-  i = data.index { |s2| s1['original_name'] == s2['name'] && s1['pref'] == s2['pref'] }
-  next unless i
-
-  data[i]['name'] = s1['name']
-end
-
-File.open('static/map/data/stations.csv', 'w:utf-8') do |file|
-  file.puts 'cd,name,lat,lng,prefcd,prefname,type'
-  data.each do |f|
-    line = format(
-      '%d,%s,%s,%s,%02d,%s,%d',
-      f['code'],
-      f['name'],
-      f['lat'],
-      f['lng'],
-      f['pref'],
-      f['prefname'],
-      f['type']
-    )
-    file.puts line
+  File.open('static/map/data/stations.csv', 'w:utf-8') do |file|
+    file.puts 'cd,name,lat,lng,prefcd,prefname,type'
+    data.each do |f|
+      line = format(
+        '%d,%s,%s,%s,%02d,%s,%d',
+        f['code'],
+        f['name'],
+        f['lat'],
+        f['lng'],
+        f['pref'],
+        f['prefname'],
+        f['type']
+      )
+      file.puts line
+    end
   end
 end
