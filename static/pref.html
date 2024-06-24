@@ -6,50 +6,50 @@
 
   <script>
 (async () => {
-    // d3-fetch 5.x.x 以降はPromiseで扱う
+  // d3-fetch 5.x.x 以降はPromiseで扱う
 
-    // 都道府県情報
-    const prefs = await d3.csv('./map/data/prefs_ekimemo.csv');
-    const all_count = prefs.reduce((sum, p) => sum + parseInt(p.ekimemo_count), 0)
-    console.info('駅メモの駅総数', all_count)
-    console.info('都道府県ごとの駅数', prefs)
+  // 都道府県情報
+  const prefs = await d3.csv('./map/data/prefs_ekimemo.csv');
+  const all_count = prefs.reduce((sum, p) => sum + parseInt(p.ekimemo_count), 0)
+  console.info('駅メモの駅総数', all_count)
+  console.info('都道府県ごとの駅数', prefs)
 
-    // 駅リスト
-    const stations = await d3.csv('./map/data/stations.csv');
+  // 駅リスト
+  const stations = await d3.csv('./map/data/stations.csv');
 
-    // 都道府県ごとの駅数を集計
-    const pref_count = {};
-    stations.forEach(s => {
-        let cd = s.prefcd;
-        let count = pref_count[cd] ?? 0;
-        pref_count[cd] = count + 1;
-    });
-    console.info('駅メモマップ2 都道府県ごとの駅数', pref_count)
+  // 都道府県ごとの駅数を集計
+  const pref_count = {};
+  stations.forEach(s => {
+    let cd = s.prefcd;
+    let count = pref_count[cd] ?? 0;
+    pref_count[cd] = count + 1;
+  });
+  console.info('駅メモマップ2 都道府県ごとの駅数', pref_count)
 
-    // 表示の値を設定
-    const maintable = document.querySelector('#maintable');
-    prefs.forEach(p => {
-        let tr = document.querySelector('#template').cloneNode(true);
-        tr.id = '';
-        let tds = tr.querySelectorAll('td');
-        let count = pref_count[p.pref_code];
-		let ekimemo_count = parseInt(p.ekimemo_count);
-        tds[0].innerText = p.pref_code; // 都道府県コード
-        tds[1].innerText = p.pref_name; // 都道府県名
-        tds[2].innerText = count; // 実際の駅数
-        tds[3].innerText = ekimemo_count; // 駅メモの駅数
+  // 表示の値を設定
+  const maintable = document.querySelector('#maintable');
+  prefs.forEach(p => {
+    let tr = document.querySelector('#template').cloneNode(true);
+    tr.id = '';
+    let tds = tr.querySelectorAll('td');
+    let count = pref_count[p.pref_code];
+    let ekimemo_count = parseInt(p.ekimemo_count);
+    tds[0].innerText = p.pref_code; // 都道府県コード
+    tds[1].innerText = p.pref_name; // 都道府県名
+    tds[2].innerText = count; // 実際の駅数
+    tds[3].innerText = ekimemo_count; // 駅メモの駅数
 
-        // 過不足の確認
-        if (count === ekimemo_count) {
-            tds[4].innerText = 'OK';
-        } else if (count < ekimemo_count) {
-            tds[4].innerText = `${ekimemo_count - count}個すくない`;
-        } else {
-            tds[4].innerText = `${count - ekimemo_count}個多い`;
-        }
-        maintable.appendChild(tr);
-    });
-})()
+    // 過不足の確認
+    if (count === ekimemo_count) {
+      tds[4].innerText = 'OK';
+    } else if (count < ekimemo_count) {
+      tds[4].innerText = `${ekimemo_count - count}個すくない`;
+    } else {
+      tds[4].innerText = `${count - ekimemo_count}個多い`;
+    }
+    maintable.appendChild(tr);
+  });
+})()    
   </script>
   </head>
   駅メモと、駅メモマップ2 のデータ整合性を確認するためのページです。
