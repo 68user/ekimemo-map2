@@ -53,14 +53,16 @@
   </script>
   </head>
   駅メモと、駅メモマップ2 のデータ整合性を確認するためのページです。
+  A: stations.csv で駅データを、B: prefs_ekimemo.csv で都道府県別駅数を管理しているので、
+  A の駅数が B の駅数と一致するか表示します。
   <body>
     <table border>
       <tbody id="maintable">
 	<tr>
 	  <th>都道府県コード</th>
 	  <th>都道府県名</th>
-	  <th>駅メモマップ2での駅数</th>
-	  <th>駅メモでの駅数</th>
+	  <th>駅メモマップ2での駅数(A)</th>
+	  <th>駅メモでの駅数(B)</th>
 	  <th>判定</th>
 	  <th>内容</th>
 	</th>
